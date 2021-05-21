@@ -3,7 +3,7 @@ package test
 import (
 	"log"
 	"testing"
-	service2 "vote/v1/service"
+	service2 "vote/trash/internal/v1/service"
 )
 
 func TestAdminLogin(t *testing.T) {

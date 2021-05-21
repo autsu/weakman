@@ -2,10 +2,10 @@ package service
 
 import (
 	"log"
-	dao2 "vote/v1/dao"
-	errno2 "vote/v1/errno"
-	pkg2 "vote/v1/pkg"
-	tool2 "vote/v1/tool"
+	dao2 "vote/trash/internal/v1/dao"
+	errno2 "vote/trash/internal/v1/errno"
+	pkg2 "vote/trash/internal/v1/pkg"
+	tool2 "vote/trash/internal/v1/tool"
 )
 
 func AdminLogin(username, password string) (token string, err error) {

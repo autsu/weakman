@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"log"
 	"testing"
-	model2 "vote/v1/model"
+	model2 "vote/trash/internal/v1/model"
 )
 
 func Test1(t *testing.T) {

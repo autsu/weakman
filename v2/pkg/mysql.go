@@ -12,5 +12,7 @@ func NewMysql() (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	conn.SetMaxOpenConns(16)
+	conn.SetMaxIdleConns(8)
 	return conn, nil
 }

@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/sirupsen/logrus"
 	"strings"
 	"time"
 	"vote/v2/errno"
@@ -18,7 +19,7 @@ const (
 	HeadPrefix = "Bearer "       // HeadPrefix token 前缀
 )
 
-func CreateJwt(id string) string {
+func CreateJwt(id string) (string, error) {
 	// 指定信息
 	claims := jwt.StandardClaims{
 		Audience:  "",                               // 受众
@@ -34,9 +35,10 @@ func CreateJwt(id string) string {
 		NewWithClaims(jwt.SigningMethodHS256, claims).
 		SignedString(Secret)
 	if err != nil {
-		panic(err)
+		logrus.Errorf("%s: %s\n", errno.JwtCreateError, err)
+		return "", errno.JwtCreateError
 	}
-	return token
+	return token, nil
 }
 
 func ParseToken(token string) (*jwt.StandardClaims, error) {
@@ -46,18 +48,20 @@ func ParseToken(token string) (*jwt.StandardClaims, error) {
 			return Secret, nil
 		})
 	if err != nil {
-		return nil, err
+		logrus.Errorf("%s: %s\n", errno.TokenInvalid, err)
+		return nil, errno.TokenInvalid
 	}
 
 	claims, ok := jwtToken.Claims.(*jwt.StandardClaims)
 	if ok && jwtToken.Valid {
 		return claims, nil
 	}
-	return nil, errno.TOKEN_INVALID
+	logrus.Errorf("%s: %s\n", errno.TokenInvalid, err)
+	return nil, errno.TokenInvalid
 }
 
 // GetRawToken 获取原生 token
-func GetRawToken(token string) (string, error) {
+func getRawToken(token string) (string, error) {
 	var rawToken string
 	if len(token) != 0 {
 		// 以空格为分隔符，将字符串切割为多个子串
@@ -65,6 +69,21 @@ func GetRawToken(token string) (string, error) {
 		rawToken = strings.Fields(token)[1]
 		return rawToken, nil
 	} else {
-		return "", errno.TOKEN_INVALID
+		logrus.Errorf("%s\n", errno.TokenInvalid)
+		return "", errno.TokenInvalid
 	}
+}
+
+// ParseTokenWithBearer 如果 token 携带了 Bearer 标识，则调用该方法
+func ParseTokenWithBearer(token string) (*jwt.StandardClaims, error) {
+	rawToken, err := getRawToken(token)
+	if err != nil {
+		return nil, err
+	}
+	claims, err := ParseToken(rawToken)
+	if err != nil {
+		logrus.Errorf("%s: %s\n", errno.TokenInvalid, err)
+		return nil, err
+	}
+	return claims, nil
 }

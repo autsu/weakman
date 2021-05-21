@@ -4,7 +4,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"strings"
 	"time"
-	errno2 "vote/v1/errno"
+	errno2 "vote/trash/internal/v1/errno"
 )
 
 var (

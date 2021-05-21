@@ -3,7 +3,7 @@ package pkg
 import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	config2 "vote/v1/config"
+	config2 "vote/trash/internal/v1/config"
 )
 
 func NewMysql() (*sqlx.DB, error) {

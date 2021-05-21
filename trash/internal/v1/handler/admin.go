@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	model2 "vote/v1/model"
-	result2 "vote/v1/result"
-	service2 "vote/v1/service"
+	model2 "vote/trash/internal/v1/model"
+	result2 "vote/trash/internal/v1/result"
+	service2 "vote/trash/internal/v1/service"
 )
 
 var AdminLogin = func(c *gin.Context) {

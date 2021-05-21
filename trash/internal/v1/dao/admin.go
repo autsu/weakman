@@ -2,8 +2,8 @@ package dao
 
 import (
 	"log"
-	model2 "vote/v1/model"
-	pkg2 "vote/v1/pkg"
+	model2 "vote/trash/internal/v1/model"
+	pkg2 "vote/trash/internal/v1/pkg"
 )
 
 func AdminQueryByUname(username string) (*model2.Admin, error) {

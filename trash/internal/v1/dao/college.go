@@ -4,8 +4,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"log"
 	"time"
-	model2 "vote/v1/model"
-	pkg2 "vote/v1/pkg"
+	model2 "vote/trash/internal/v1/model"
+	pkg2 "vote/trash/internal/v1/pkg"
 )
 
 func CollegeAdd(name string) (int64, error) {
@@ -170,7 +170,7 @@ where id in (?)
 		log.Println(err)
 		return 0, err
 	}
-	//log.Println(query)
+	//logs.Println(query)
 
 	r, err := mysql.Exec(query, args...)
 	if err != nil {

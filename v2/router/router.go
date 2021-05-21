@@ -2,27 +2,26 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	handler2 "vote/trash/internal/v1/handler"
-	middleware2 "vote/trash/internal/v1/middleware"
+	"vote/v2/handler"
+	"vote/v2/middleware"
 )
 
 func Router() *gin.Engine {
 	r := gin.Default()
 
+	r.Use(middleware.Cors())
 
-	admin := r.Group("/ad111")
+	stu := r.Group("/stu")
 	{
-		admin.POST("/login", handler2.AdminLogin)
+		stu.POST("/login", handler.StuLogin)
+		stu.POST("/register", handler.StuRegister)
 
-		// 下面的路由都会经过 AdminAuth 验证
-		admin.Use(middleware2.AdminAuth)
-		admin.GET("/college", handler2.AdminQueryAllCollege)
-		admin.GET("/college/id/:id", handler2.AdminQueryCollegeByIdWithProfession)
-		//admin.GET("/college/name/:name")
-		admin.POST("/college", handler2.AdminAddCollege)
-		admin.DELETE("/college/:id", handler2.AdminDeleteCollege)
-		admin.PUT("/college", handler2.AdminUpdateCollege)
+		r.Use(middleware.StuAuth)
+		stu.GET("/info", handler.StuGetInfo)
 	}
+
+	r.POST("/topic", handler.TopicInsert)
+
 
 	return r
 }

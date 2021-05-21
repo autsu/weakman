@@ -2,9 +2,9 @@ package service
 
 import (
 	"log"
-	dao2 "vote/v1/dao"
-	errno2 "vote/v1/errno"
-	model2 "vote/v1/model"
+	dao2 "vote/trash/internal/v1/dao"
+	errno2 "vote/trash/internal/v1/errno"
+	model2 "vote/trash/internal/v1/model"
 )
 
 func CollegeGetAll() ([]*model2.College, error) {

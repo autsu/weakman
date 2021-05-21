@@ -3,7 +3,7 @@ package test
 import (
 	"log"
 	"testing"
-	dao2 "vote/v1/dao"
+	dao2 "vote/trash/internal/v1/dao"
 )
 
 func TestQueryAdminByUname(t *testing.T) {

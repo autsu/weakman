@@ -2,19 +2,18 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"log"
 	"net/http"
 	"strings"
-	pkg2 "vote/trash/internal/v1/pkg"
-	result2 "vote/trash/internal/v1/result"
+	result2 "vote/v2/enum/result"
+	"vote/v2/pkg"
 )
 
 func AdminAuth(c *gin.Context) {
 	token := c.GetHeader("Authorization")
-	log.Println(token)
-	// 先去掉 token 前面的 bearer ，再解析，否则解析会 panic
-	token, _ = pkg2.GetRawToken(token)
-	parseToken, err := pkg2.ParseToken(token)
+	logrus.Info(token)
+	parseToken, err := pkg.ParseTokenWithBearer(token)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest,
@@ -37,5 +36,18 @@ func AdminAuth(c *gin.Context) {
 
 func IsAdminId(id string) bool {
 	return strings.Contains(id, "iaabb")
+}
+
+func StuAuth(c *gin.Context)  {
+	token := c.GetHeader("Authorization")
+	logrus.Info(token)
+
+	_, err := pkg.ParseTokenWithBearer(token)
+	if err != nil {
+		logrus.Error(err)
+		c.JSON(http.StatusForbidden, result2.NewWithCode(result2.TOKEN_INVALID))
+		c.Abort()
+	}
+	c.Next()
 }
 

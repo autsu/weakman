@@ -4,7 +4,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"testing"
-	config2 "vote/v1/config"
+	config2 "vote/trash/internal/v1/config"
 )
 
 func TestMysqlConfig(t *testing.T) {

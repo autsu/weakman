@@ -2,8 +2,8 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	handler2 "vote/v1/handler"
-	middleware2 "vote/v1/middleware"
+	handler2 "vote/trash/internal/v1/handler"
+	middleware2 "vote/trash/internal/v1/middleware"
 )
 
 func Router() *gin.Engine {

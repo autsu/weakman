@@ -4,7 +4,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"testing"
-	pkg2 "vote/v1/pkg"
+	pkg2 "vote/trash/internal/v1/pkg"
 )
 
 func TestMysqlPing(t *testing.T) {

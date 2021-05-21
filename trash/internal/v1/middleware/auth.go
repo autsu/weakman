@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	pkg2 "vote/v1/pkg"
-	result2 "vote/v1/result"
+	pkg2 "vote/trash/internal/v1/pkg"
+	result2 "vote/trash/internal/v1/result"
 )
 
 func AdminAuth(c *gin.Context) {
