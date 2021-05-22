@@ -7,4 +7,6 @@ const (
 	TOPIC_ANONYMOUS                   = 1
 	TOPIC_SHOW_RESULT                 = 1
 	TOPIC_DONT_SHOW_RESULT            = 0
+	TOPIC_REVIEW_PASS                 = 1
+	TOPIC_REVIEW_NO_PASS              = 0
 )

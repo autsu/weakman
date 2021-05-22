@@ -14,6 +14,8 @@ var (
 	MysqlInsertError           = errors.New("数据库插入错误")
 	MysqlGetLastInsertIdError  = errors.New("获取最后一次插入的 id 错误")
 	MysqlStartTransactionError = errors.New("开启事务错误")
+	MysqlLimitParamError       = errors.New("提供的分页参数错误，page 和 size 必须大于 0")
+	MysqlScanError             = errors.New("scan 参数时发生错误")
 )
 
 var (

@@ -41,7 +41,7 @@ func NewMysqlConfig() (dns string, err error) {
 	logrus.Info(host, username, password, port, dbname)
 	//log.Println(host, username, password, port, dbname)
 
-	dns = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True",
+	dns = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		username, password, host, port, dbname)
 	logrus.Info(dns)
 	return dns, nil

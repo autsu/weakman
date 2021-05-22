@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"log"
 	"testing"
-	model2 "vote/trash/internal/v1/model"
+	"vote/v2/model"
 )
 
 func Test1(t *testing.T) {
@@ -16,7 +16,7 @@ func Test1(t *testing.T) {
 	}
 
 	sql := "select * from vote_stu"
-	var stu []model2.Stu
+	var stu []model.Stu
 	if err := db.Select(&stu, sql); err != nil {
 		log.Fatalln(err)
 		return

@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"time"
+	"strconv"
 	"vote/v2/enum/result"
 	"vote/v2/errno"
 	"vote/v2/model"
@@ -13,23 +13,7 @@ import (
 )
 
 func TopicInsert(c *gin.Context) {
-	var topicVo = struct {
-		// topic
-		Title       string
-		Description string
-		Deadline    time.Time
-
-		// topic_set
-		SelectType int
-		Anonymous  int
-		ShowResult int
-		Password   string
-
-		// topic_option
-		Option []struct {
-			OptionContent string
-		}
-	}{}
+	var topicVo model.TopicVO
 
 	token := c.GetHeader("Authorization")
 	if err := c.ShouldBindJSON(&topicVo); err != nil {
@@ -38,6 +22,7 @@ func TopicInsert(c *gin.Context) {
 		return
 	}
 	logrus.Infof("topicVo: %+v\n", topicVo)
+	topicVo.Deadline = topicVo.Deadline.Local()
 
 	t := &model.Topic{
 		Title:       topicVo.Title,
@@ -72,4 +57,47 @@ func TopicInsert(c *gin.Context) {
 
 	c.JSON(http.StatusOK,
 		result.NewWithCodeAndData(result.SUCCESS, nil))
+}
+
+func TopicQueryAllWithTopicSet(c *gin.Context) {
+	page := c.Query("page")
+	size := c.Query("size")
+
+	pint, _ := strconv.Atoi(page)
+	sint, _ := strconv.Atoi(size)
+
+	topics, err := service.TopicQueryAllWithTopicSet(pint, sint)
+	if err != nil {
+		if errors.Is(err, errno.MysqlLimitParamError) {
+			c.JSON(http.StatusBadRequest, result.NewWithCode(result.BAD_REQUEST))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
+		return
+	}
+	c.JSON(http.StatusOK, result.NewWithCodeAndData(result.SUCCESS, topics))
+}
+
+// TopicQueryAllFriendlyData 返回友好数据方便前端使用（例如直接显示 name 而不是 id）
+// 这个脱裤子放屁的接口完全是因为前端不会写而产生的
+func TopicQueryAllFriendlyData(c *gin.Context) {
+	page := c.Query("page")
+	size := c.Query("size")
+
+	pint, _ := strconv.Atoi(page)
+	sint, _ := strconv.Atoi(size)
+
+	topics, total, err := service.TopicQueryAllFriendlyData(pint, sint)
+	if err != nil {
+		if errors.Is(err, errno.MysqlLimitParamError) {
+			c.JSON(http.StatusBadRequest, result.NewWithCode(result.BAD_REQUEST))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
+		return
+	}
+	c.JSON(http.StatusOK, result.NewWithCodeAndData(result.SUCCESS, gin.H{
+		"total": total,
+		"topic": topics,
+	}))
 }

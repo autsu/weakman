@@ -21,7 +21,8 @@ func Router() *gin.Engine {
 	}
 
 	r.POST("/topic", handler.TopicInsert)
-
+	r.GET("/topic", handler.TopicQueryAllWithTopicSet)
+	r.GET("/topic/list", handler.TopicQueryAllFriendlyData)
 
 	return r
 }

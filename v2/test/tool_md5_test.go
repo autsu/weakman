@@ -3,11 +3,11 @@ package test
 import (
 	"log"
 	"testing"
-	tool2 "vote/trash/internal/v1/tool"
+	"vote/v2/tool"
 )
 
 func TestMd5(t *testing.T) {
-	md5, err := tool2.NewMD5("root")
+	md5, err := tool.NewMD5("root")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -17,6 +17,6 @@ func TestMd5(t *testing.T) {
 func TestMD5Equal(t *testing.T) {
 	userInputPwd := "abcd12345"	// 用户输入的原始数据
 	dbPwd := "a99442d2a736365f5fe637e299b0e339"	// 数据库中保存的加密数据
-	ok := tool2.MD5Equal(userInputPwd, dbPwd)
+	ok := tool.MD5Equal(userInputPwd, dbPwd)
 	log.Println(ok)
 }
