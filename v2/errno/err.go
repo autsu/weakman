@@ -8,6 +8,10 @@ var (
 )
 
 var (
+	UserIsVoted = errors.New("您已经投过票了")
+)
+
+var (
 	MysqlConnectError          = errors.New("连接数据库错误")
 	MysqlSelectError           = errors.New("数据库查询错误")
 	MysqlSelectNoData          = errors.New("未查询到数据")
@@ -16,6 +20,7 @@ var (
 	MysqlStartTransactionError = errors.New("开启事务错误")
 	MysqlLimitParamError       = errors.New("提供的分页参数错误，page 和 size 必须大于 0")
 	MysqlScanError             = errors.New("scan 参数时发生错误")
+	MysqlUpdateError           = errors.New("更新失败")
 )
 
 var (

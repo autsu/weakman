@@ -67,6 +67,10 @@ func TopicQueryAllWithTopicSet(c *gin.Context) {
 	sint, _ := strconv.Atoi(size)
 
 	topics, err := service.TopicQueryAllWithTopicSet(pint, sint)
+	// 将返回的 json 中的密码字段隐藏
+	for _, topic := range topics {
+		topic.TopicSets.Password = "******回复后可查看******"
+	}
 	if err != nil {
 		if errors.Is(err, errno.MysqlLimitParamError) {
 			c.JSON(http.StatusBadRequest, result.NewWithCode(result.BAD_REQUEST))
@@ -99,5 +103,18 @@ func TopicQueryAllFriendlyData(c *gin.Context) {
 	c.JSON(http.StatusOK, result.NewWithCodeAndData(result.SUCCESS, gin.H{
 		"total": total,
 		"topic": topics,
+	}))
+}
+
+func TopicQueryByTitleFriendlyData(c *gin.Context) {
+	title := c.Param("title")
+	data, total, err := service.TopicQueryByTitleFriendlyData(title)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
+		return
+	}
+	c.JSON(http.StatusOK, result.NewWithCodeAndData(result.SUCCESS, gin.H{
+		"total": total,
+		"topic": data,
 	}))
 }

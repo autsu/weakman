@@ -32,3 +32,9 @@ type TopicFriendly struct {
 	NeedPassword string
 	Deadline     string
 }
+
+type VoteVo struct {
+	Record  *VoteRecord
+	Votes   int32 // 票数
+	TopicId int
+}

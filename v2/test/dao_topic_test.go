@@ -23,3 +23,11 @@ func TestTopicCount(t *testing.T) {
 	}
 	log.Println(count)
 }
+
+func TestTopicQueryByTitle(t *testing.T) {
+	topic, err := dao.TopicQueryByTitle("123")
+	if err != nil {
+		log.Println(err)
+	}
+	log.Printf("%+v\n", topic)
+}

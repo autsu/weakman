@@ -21,7 +21,7 @@ type Topic struct {
 	ReviewStatus       int       `db:"review_status"`
 	CreateTime         time.Time `db:"create_time"`
 	//DeleteTime         time.Time `db:"delete_time"`
-	TopicSets          *TopicSet
+	TopicSets *TopicSet
 }
 
 type TopicSet struct {
@@ -35,9 +35,16 @@ type TopicSet struct {
 
 type TopicOption struct {
 	Id            int
-	TopicId       int
-	OptionContent string
+	TopicId       int    `db:"topic_id"`
+	OptionContent string `db:"option_content"`
 	Number        int
+}
+
+type VoteRecord struct {
+	Id       int
+	Uid      int
+	OptionId int `db:"option_id"`
+	Time     time.Time
 }
 
 // BJT 北京时间 unused

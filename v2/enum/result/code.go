@@ -14,6 +14,7 @@ const (
 	TOKEN_PARSE_ERROR         Code = 6
 	BAD_REQUEST               Code = 7
 	ADMIN_FORBIDDEN           Code = 8
+	USER_IS_VOTED             Code = 30022
 )
 
 func (c Code) String() string {
@@ -41,6 +42,8 @@ func (c Code) String() string {
 		message = "创建登录凭证失败，请再试一次"
 	case USER_NOT_EXIST:
 		message = "该用户不存在"
+	case USER_IS_VOTED:
+		message = "您已经投过票了"
 	}
 	return message
 }

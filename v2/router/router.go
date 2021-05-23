@@ -11,6 +11,16 @@ func Router() *gin.Engine {
 
 	r.Use(middleware.Cors())
 
+	r.POST("/topic", handler.TopicInsert)
+	r.GET("/topic", handler.TopicQueryAllWithTopicSet)
+	r.GET("/topic/friendly", handler.TopicQueryAllFriendlyData)
+	r.GET("/topic/friendly/:title", handler.TopicQueryByTitleFriendlyData)
+
+	r.GET("/option/:topicId", handler.TopicOptionQueryByTopicId)
+
+	r.GET("/topicset/:topicId", handler.TopicSetQueryByTopicId)
+
+
 	stu := r.Group("/stu")
 	{
 		stu.POST("/login", handler.StuLogin)
@@ -19,10 +29,6 @@ func Router() *gin.Engine {
 		r.Use(middleware.StuAuth)
 		stu.GET("/info", handler.StuGetInfo)
 	}
-
-	r.POST("/topic", handler.TopicInsert)
-	r.GET("/topic", handler.TopicQueryAllWithTopicSet)
-	r.GET("/topic/list", handler.TopicQueryAllFriendlyData)
-
+	r.POST("/vote", handler.Vote)
 	return r
 }

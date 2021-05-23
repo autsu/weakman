@@ -199,3 +199,125 @@ select count(*) from vote_topic
 
 	return total, nil
 }
+
+func TopicQueryByTitle(title string) ([]*model.Topic, error) {
+	mysql, err := pkg.NewMysql()
+	if err != nil {
+		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
+		return nil, errno.MysqlConnectError
+	}
+	defer mysql.Close()
+
+	sql := `
+select t.id,
+       t.stu_id,
+       t.title,
+       t.description,
+       t.deadline,
+       t.review_status,
+       t.create_time,
+       vs.id,
+       vs.topic_id,
+       vs.select_type,
+       vs.anonymous,
+       vs.show_result,
+       vs.password
+from vote_topic t
+         join vote_set vs on t.id = vs.topic_id
+where t.delete_time is null
+  and t.review_status = ?
+	and t.title = ?
+`
+	var ts []*model.Topic
+	rows, err := mysql.Query(sql, enum.TOPIC_REVIEW_PASS, title)
+	if err != nil {
+		logrus.Warningf("%s: %s", errno.MysqlSelectNoData.Error(), err.Error())
+		return nil, errno.MysqlSelectNoData
+	}
+	for rows.Next() {
+		var s model.TopicSet
+		var t model.Topic
+		if err := rows.Scan(
+			&t.Id,
+			&t.StuId,
+			&t.Title,
+			&t.Description,
+			&t.Deadline,
+			&t.ReviewStatus,
+			&t.CreateTime,
+			&s.Id,
+			&s.TopicId,
+			&s.SelectType,
+			&s.Anonymous,
+			&s.ShowResult,
+			&s.Password); err != nil {
+			logrus.Errorf("%s: %s\n", errno.MysqlScanError.Error(), err.Error())
+			return nil, errno.MysqlScanError
+		}
+		t.TopicSets = &s
+		ts = append(ts, &t)
+	}
+
+	return ts, nil
+}
+
+func TopicQueryById(id string) (*model.Topic, error) {
+	mysql, err := pkg.NewMysql()
+	if err != nil {
+		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
+		return nil, errno.MysqlConnectError
+	}
+	defer mysql.Close()
+
+	sql := `
+select t.id,
+       t.stu_id,
+       t.title,
+       t.description,
+       t.deadline,
+       t.review_status,
+       t.create_time,
+       vs.id,
+       vs.topic_id,
+       vs.select_type,
+       vs.anonymous,
+       vs.show_result,
+       vs.password
+from vote_topic t
+         join vote_set vs on t.id = vs.topic_id
+where t.delete_time is null
+  and t.review_status = ?
+	and t.id = ?
+`
+	var t model.Topic
+	rows, err := mysql.Query(sql, enum.TOPIC_REVIEW_PASS, id)
+	if err != nil {
+		logrus.Warningf("%s: %s", errno.MysqlSelectNoData.Error(), err.Error())
+		return nil, errno.MysqlSelectNoData
+	}
+	for rows.Next() {
+		var s model.TopicSet
+		//var t model.Topic
+		if err := rows.Scan(
+			&t.Id,
+			&t.StuId,
+			&t.Title,
+			&t.Description,
+			&t.Deadline,
+			&t.ReviewStatus,
+			&t.CreateTime,
+			&s.Id,
+			&s.TopicId,
+			&s.SelectType,
+			&s.Anonymous,
+			&s.ShowResult,
+			&s.Password); err != nil {
+			logrus.Errorf("%s: %s\n", errno.MysqlScanError.Error(), err.Error())
+			return nil, errno.MysqlScanError
+		}
+		t.TopicSets = &s
+	}
+
+	return &t, nil
+}
+
