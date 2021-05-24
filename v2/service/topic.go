@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/sirupsen/logrus"
+	"sort"
 	"strconv"
 	"time"
 	"vote/v2/dao"
@@ -9,6 +10,7 @@ import (
 	"vote/v2/errno"
 	"vote/v2/model"
 	"vote/v2/pkg"
+	"vote/v2/tool"
 )
 
 // TopicInsert
@@ -188,8 +190,42 @@ func IsVoted(userId, topicId string) error {
 	for _, record := range records {
 		option, _ := dao.TopicOptionQueryById(strconv.Itoa(record.OptionId))
 		if option != nil && strconv.Itoa(option.TopicId) == topicId {
-			return errno.UserIsVoted
+			return errno.TopicUserIsVoted
 		}
 	}
 	return nil
+}
+
+func TopicQueryByIdWithFmtTime(topicId string) (*model.Topic, error) {
+	topic, err := dao.TopicQueryById(topicId)
+	if err != nil {
+		return nil, err
+	}
+	topic.Deadline = tool.UtoB(topic.Deadline)
+	topic.TopicSets.Password = "YOU DON'T NEED KNOWN"
+	topic.CreateTime = tool.UtoB(topic.CreateTime)
+
+	logrus.Info(topic)
+	return topic, nil
+}
+
+func TopicShowResultById(id string) ([]*model.VoteResultVO, error) {
+	rs, err := dao.TopicShowResultById(id)
+	if err != nil {
+		return nil, err
+	}
+	var total int
+	for _, r := range rs {
+		total += r.Votes
+	}
+
+	sort.Slice(rs, func(i, j int) bool {
+		return rs[i].Votes > rs[j].Votes
+	})
+
+	for _, r := range rs {
+		r.Percentage = float32(r.Votes) / float32(total)
+	}
+
+	return rs, nil
 }

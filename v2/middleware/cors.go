@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
+	"vote/v2/enum/result"
 )
 
 func Cors() gin.HandlerFunc {
@@ -30,11 +32,13 @@ func Cors() gin.HandlerFunc {
 			c.JSON(http.StatusOK, "ok!")
 		}
 
-		//defer func() {
-		//	if err := recover(); err != nil {
-		//		log.Printf("Panic info is: %v", err)
-		//	}
-		//}()
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("Panic info is: %v", err)
+				c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
+				return
+			}
+		}()
 
 		c.Next()
 	}

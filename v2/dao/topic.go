@@ -35,6 +35,7 @@ values (?, ?, ?, ?)
 	return lastId, err
 }
 
+// TopicInsertWithSetAndOptions 因为要连续插入到三张表，所以需要添加事务
 func TopicInsertWithSetAndOptions(
 	t *model.Topic,
 	s *model.TopicSet,
@@ -68,6 +69,7 @@ func TopicInsertWithSetAndOptions(
 		}
 	}()
 
+	// 1.添加数据到 vote_topic 表
 	topicSql := `
 insert into vote_topic(stu_id, title, description, deadline)  
 values (?, ?, ?, ?)
@@ -79,6 +81,7 @@ values (?, ?, ?, ?)
 	}
 	TopicId, _ := r.LastInsertId()
 
+	// 2.添加到 vote_set 表
 	setSql := `
 insert into vote_set(topic_id, select_type, anonymous, show_result, password) 
 values (?, ?, ?, ?, ?)
@@ -90,6 +93,7 @@ values (?, ?, ?, ?, ?)
 		return errno.MysqlInsertError
 	}
 
+	// 3.添加到 topic_option 表
 	optionSql := `
 insert into topic_option(topic_id, option_content) 
 values (?, ?)
@@ -189,7 +193,8 @@ func TopicCount() (total int64, err error) {
 	defer mysql.Close()
 
 	sql := `
-select count(*) from vote_topic
+select count(*) from vote_topic 
+where vote_topic.review_status = 1
 `
 	//var count int
 	if err := mysql.Get(&total, sql); err != nil {
@@ -319,5 +324,36 @@ where t.delete_time is null
 	}
 
 	return &t, nil
+}
+
+func TopicShowResultById(id string) ([]*model.VoteResultVO, error) {
+	mysql, err := pkg.NewMysql()
+	if err != nil {
+		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
+		return nil, errno.MysqlConnectError
+	}
+	defer mysql.Close()
+
+	sql := `
+select option_content, number 
+from topic_option
+where topic_id = ?
+`
+	rows, err := mysql.Query(sql, id)
+	if err != nil {
+		logrus.Warningf("%s: %s", errno.MysqlSelectNoData.Error(), err.Error())
+		return nil, errno.MysqlSelectNoData
+	}
+
+	var rs []*model.VoteResultVO
+	for rows.Next() {
+		var r model.VoteResultVO
+		if err := rows.Scan(&r.OptionContent, &r.OptionContent); err != nil {
+			logrus.Errorf("%s: %s\n", errno.MysqlScanError.Error(), err.Error())
+			return nil, errno.MysqlScanError
+		}
+		rs = append(rs, &r)
+	}
+	return rs, nil
 }
 

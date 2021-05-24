@@ -33,8 +33,21 @@ type TopicFriendly struct {
 	Deadline     string
 }
 
-type VoteVo struct {
+type VoteSingleVO struct {
 	Record  *VoteRecord
 	Votes   int32 // 票数
 	TopicId int
+}
+
+type VoteMultipleVO struct {
+	Record  []*VoteRecord
+	Votes   int32 // 票数
+	TopicId int
+}
+
+// VoteResultVO 投票结果
+type VoteResultVO struct {
+	OptionContent string  `json:"option_content"` // 选项
+	Votes         int     `json:"votes"`          // 票数
+	Percentage    float32 `json:"percentage"`     // 占比
 }

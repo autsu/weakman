@@ -15,6 +15,8 @@ const (
 	BAD_REQUEST               Code = 7
 	ADMIN_FORBIDDEN           Code = 8
 	USER_IS_VOTED             Code = 30022
+	NO_DATA                   Code = 100
+	TOPIC_PASSWORD_ERROR      Code = 110
 )
 
 func (c Code) String() string {
@@ -44,6 +46,10 @@ func (c Code) String() string {
 		message = "该用户不存在"
 	case USER_IS_VOTED:
 		message = "您已经投过票了"
+	case NO_DATA:
+		message = "未查询到数据"
+	case TOPIC_PASSWORD_ERROR:
+		message = "输入的密码错误"
 	}
 	return message
 }

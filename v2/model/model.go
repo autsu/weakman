@@ -30,7 +30,7 @@ type TopicSet struct {
 	SelectType int `db:"select_type"`
 	Anonymous  int
 	ShowResult int `db:"show_result"`
-	Password   string
+	Password   string	`json:"-"`
 }
 
 type TopicOption struct {

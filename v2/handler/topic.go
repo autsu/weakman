@@ -118,3 +118,34 @@ func TopicQueryByTitleFriendlyData(c *gin.Context) {
 		"topic": data,
 	}))
 }
+
+func TopicQueryById(c *gin.Context) {
+	topicId := c.Param("topicId")
+	topic, err := service.TopicQueryByIdWithFmtTime(topicId)
+	logrus.Info(topic)
+	if err != nil {
+		if errors.Is(err, errno.MysqlSelectNoData) {
+			c.JSON(http.StatusOK, result.NewWithCode(result.NO_DATA))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
+		return
+	}
+	c.JSON(http.StatusOK, result.NewWithCodeAndData(result.SUCCESS, topic))
+}
+
+func TopicShowResult(c *gin.Context) {
+	topicId := c.Param("topicId")
+	// FIXME &{1 0 NaN} float32 序列化错误
+	// Panic info is: json: unsupported value: NaN
+	r, err := service.TopicShowResultById(topicId)
+	for _, vo := range r {
+		logrus.Info(vo)
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
+		return
+	}
+	c.JSON(http.StatusOK, result.NewWithCodeAndData(result.SUCCESS, r))
+}

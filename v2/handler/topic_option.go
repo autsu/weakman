@@ -25,17 +25,37 @@ func TopicOptionQueryByTopicId(c *gin.Context) {
 	}))
 }
 
-func Vote(c *gin.Context) {
+func SingleVote(c *gin.Context) {
 	token := c.GetHeader("Authorization")
-	var v model.VoteVo
+	var v model.VoteSingleVO
 	if err := c.ShouldBindJSON(&v); err != nil {
 		logrus.Error("bind json to model.topic error: ", err)
 		c.JSON(http.StatusBadRequest, result.NewWithCode(result.BAD_REQUEST))
 		return
 	}
 
-	if err := service.Vote(v.Record, v.Votes, strconv.Itoa(v.TopicId), token); err != nil {
-		if errors.Is(err, errno.UserIsVoted) {
+	if err := service.SingleVote(v.Record, v.Votes, strconv.Itoa(v.TopicId), token); err != nil {
+		if errors.Is(err, errno.TopicUserIsVoted) {
+			c.JSON(http.StatusOK, result.NewWithCode(result.USER_IS_VOTED))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
+		return
+	}
+	c.JSON(http.StatusOK, result.NewWithCode(result.SUCCESS))
+}
+
+func MultipleVote(c *gin.Context) {
+	token := c.GetHeader("Authorization")
+	var v model.VoteMultipleVO
+	if err := c.ShouldBindJSON(&v); err != nil {
+		logrus.Error("bind json to model.topic error: ", err)
+		c.JSON(http.StatusBadRequest, result.NewWithCode(result.BAD_REQUEST))
+		return
+	}
+
+	if err := service.MultipleVote(v.Record, v.Votes, strconv.Itoa(v.TopicId), token); err != nil {
+		if errors.Is(err, errno.TopicUserIsVoted) {
 			c.JSON(http.StatusOK, result.NewWithCode(result.USER_IS_VOTED))
 			return
 		}

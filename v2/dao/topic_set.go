@@ -56,3 +56,23 @@ where topic_id = ?
 	}
 	return &ts, nil
 }
+
+func TopicSetQueryPasswordByTopicId(topicId string) (password string, err error) {
+	mysql, err := pkg.NewMysql()
+	if err != nil {
+		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
+		return "", errno.MysqlConnectError
+	}
+	defer mysql.Close()
+
+	sql := `
+select password
+from vote_set
+where topic_id = ?
+`
+	if err := mysql.Get(&password, sql, topicId); err != nil {
+		logrus.Warningf("%s: %s\n", errno.MysqlSelectNoData, err)
+		return "", errno.MysqlSelectNoData
+	}
+	return
+}

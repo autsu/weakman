@@ -8,7 +8,8 @@ var (
 )
 
 var (
-	UserIsVoted = errors.New("您已经投过票了")
+	TopicUserIsVoted = errors.New("您已经投过票了")
+	TopicPasswordIsWrong = errors.New("输入的密码不正确")
 )
 
 var (
