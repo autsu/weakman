@@ -8,7 +8,10 @@ import (
 	"vote/v2/pkg"
 )
 
-func TopicInsert(t *model.Topic) (id int64, err error) {
+type TopicDao struct {
+}
+
+func (d *TopicDao) Insert(t *model.Topic) (id int64, err error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -35,8 +38,8 @@ values (?, ?, ?, ?)
 	return lastId, err
 }
 
-// TopicInsertWithSetAndOptions 因为要连续插入到三张表，所以需要添加事务
-func TopicInsertWithSetAndOptions(
+// InsertWithSetAndOptions 因为要连续插入到三张表，所以需要添加事务
+func (d *TopicDao) InsertWithSetAndOptions(
 	t *model.Topic,
 	s *model.TopicSet,
 	o []*model.TopicOption) error {
@@ -111,7 +114,7 @@ values (?, ?)
 	return nil
 }
 
-func TopicQueryAllLimitWithTopicSet(page, size int) ([]*model.Topic, error) {
+func (d *TopicDao) QueryAllLimitWithTopicSet(page, size int) ([]*model.Topic, error) {
 	if page <= 0 || size <= 0 {
 		logrus.Errorf("%s, page: %d, size: %d\n",
 			errno.MysqlLimitParamError.Error(), page, size)
@@ -142,13 +145,13 @@ select t.id,
 from vote_topic t
          join vote_set vs on t.id = vs.topic_id
 where t.delete_time is null
-  and t.review_status = ?
+  /*and t.review_status = ?*/
 limit ?,?
 `
 
 	limitOne := (page - 1) * size
 	var ts []*model.Topic
-	rows, err := mysql.Query(sql, enum.TOPIC_REVIEW_PASS, limitOne, size)
+	rows, err := mysql.Query(sql /*enum.TOPIC_REVIEW_PASS, */, limitOne, size)
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlSelectError.Error(), err.Error())
 		return nil, errno.MysqlSelectError
@@ -184,7 +187,7 @@ limit ?,?
 	return ts, nil
 }
 
-func TopicCount() (total int64, err error) {
+func (d *TopicDao) Count() (total int64, err error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -205,7 +208,7 @@ where vote_topic.review_status = 1
 	return total, nil
 }
 
-func TopicQueryByTitle(title string) ([]*model.Topic, error) {
+func (d *TopicDao) QueryByTitle(title string) ([]*model.Topic, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -266,7 +269,7 @@ where t.delete_time is null
 	return ts, nil
 }
 
-func TopicQueryById(id string) (*model.Topic, error) {
+func (d *TopicDao) QueryById(id string) (*model.Topic, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -326,7 +329,7 @@ where t.delete_time is null
 	return &t, nil
 }
 
-func TopicShowResultById(id string) ([]*model.VoteResultVO, error) {
+func (d *TopicDao) ShowResultById(id string) ([]*model.VoteResultVO, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -335,7 +338,7 @@ func TopicShowResultById(id string) ([]*model.VoteResultVO, error) {
 	defer mysql.Close()
 
 	sql := `
-select option_content, number 
+select id, option_content, number 
 from topic_option
 where topic_id = ?
 `
@@ -348,7 +351,7 @@ where topic_id = ?
 	var rs []*model.VoteResultVO
 	for rows.Next() {
 		var r model.VoteResultVO
-		if err := rows.Scan(&r.OptionContent, &r.OptionContent); err != nil {
+		if err := rows.Scan(&r.OptionId, &r.OptionContent, &r.Votes); err != nil {
 			logrus.Errorf("%s: %s\n", errno.MysqlScanError.Error(), err.Error())
 			return nil, errno.MysqlScanError
 		}
@@ -356,4 +359,3 @@ where topic_id = ?
 	}
 	return rs, nil
 }
-

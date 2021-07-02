@@ -13,3 +13,11 @@ func TestTopicOptionQueryById(t *testing.T) {
 	}
 	log.Println(option)
 }
+
+func TestOptionShowParticipantById(t *testing.T) {
+	name, err := dao.TopicOptionShowParticipantById("1")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println(name)
+}

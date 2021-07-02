@@ -7,7 +7,10 @@ import (
 	"vote/v2/pkg"
 )
 
-func RecordInsert(r *model.VoteRecord) (n int64, err error) {
+type VoteRecordDao struct {
+}
+
+func (d *VoteRecordDao) Insert(r *model.VoteRecord) (n int64, err error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -28,7 +31,7 @@ insert into vote_record(uid, option_id, time) values (?, ?, ?)
 	return n, nil
 }
 
-func RecordQueryByUserId(userId string) ([]*model.VoteRecord, error) {
+func (d *VoteRecordDao) QueryByUserId(userId string) ([]*model.VoteRecord, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -49,7 +52,7 @@ where uid = ?
 	return vs, nil
 }
 
-func RecordQueryById(id string) ([]*model.VoteRecord, error) {
+func (d *VoteRecordDao) QueryById(id string) ([]*model.VoteRecord, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)

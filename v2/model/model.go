@@ -7,10 +7,10 @@ import (
 
 type Stu struct {
 	Id       int
-	Username string
-	Password string
-	Phone    string
-	Name     string
+	Username string `binding:"gte=6,lte=15"`
+	Password string `binding:"gte=6,lte=15"`
+	Phone    string `binding:"required"`
+	Name     string `binding:"required"`
 }
 
 type Topic struct {
@@ -29,8 +29,8 @@ type TopicSet struct {
 	TopicId    int `db:"topic_id"`
 	SelectType int `db:"select_type"`
 	Anonymous  int
-	ShowResult int `db:"show_result"`
-	Password   string	`json:"-"`
+	ShowResult int    `db:"show_result"`
+	Password   string `json:"-"`
 }
 
 type TopicOption struct {
@@ -45,6 +45,13 @@ type VoteRecord struct {
 	Uid      int
 	OptionId int `db:"option_id"`
 	Time     time.Time
+}
+
+type Admin struct {
+	Id       string
+	Username string
+	Password string
+	Name     string
 }
 
 // BJT 北京时间 unused

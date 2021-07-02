@@ -7,7 +7,10 @@ import (
 	"vote/v2/pkg"
 )
 
-func StuQueryByUsername(username string) (*model.Stu, error) {
+type StuDao struct {
+}
+
+func (d *StuDao) QueryByUsername(username string) (*model.Stu, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError.Error(), err)
@@ -29,7 +32,7 @@ where username = ?
 	return &s, nil
 }
 
-func StuQueryByPhone(phone string) (*model.Stu, error) {
+func (d *StuDao) QueryByPhone(phone string) (*model.Stu, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError.Error(), err)
@@ -51,7 +54,7 @@ where phone = ?
 	return &s, nil
 }
 
-func StuQueryById(id string) (*model.Stu, error) {
+func (d *StuDao) QueryById(id string) (*model.Stu, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError.Error(), err)
@@ -73,7 +76,7 @@ where id = ?
 	return &s, nil
 }
 
-func StuInsert(s *model.Stu) (n int64, err error) {
+func (d *StuDao) Insert(s *model.Stu) (n int64, err error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError.Error(), err)
@@ -93,5 +96,3 @@ values (?, ?, ?, ?)
 	n, _ = r.RowsAffected()
 	return
 }
-
-

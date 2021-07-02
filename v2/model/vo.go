@@ -47,6 +47,7 @@ type VoteMultipleVO struct {
 
 // VoteResultVO 投票结果
 type VoteResultVO struct {
+	OptionId      string  `json:"option_id"`
 	OptionContent string  `json:"option_content"` // 选项
 	Votes         int     `json:"votes"`          // 票数
 	Percentage    float32 `json:"percentage"`     // 占比

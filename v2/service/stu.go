@@ -9,8 +9,12 @@ import (
 	"vote/v2/tool"
 )
 
-func StuLogin(username, password string) (token string, err error) {
-	stu, err := dao.StuQueryByUsername(username)
+type StuService struct {
+	stuDao dao.StuDao
+}
+
+func (v *StuService) Login(username, password string) (token string, err error) {
+	stu, err := v.stuDao.QueryByUsername(username)
 	if err != nil {
 		return "", err
 	}
@@ -25,8 +29,8 @@ func StuLogin(username, password string) (token string, err error) {
 	return jwt, nil
 }
 
-func StuRegister(s *model.Stu) (int64, error) {
-	if StuIsExist(s) {
+func (v *StuService) Register(s *model.Stu) (int64, error) {
+	if v.IsExist(s) {
 		return 0, errno.RegisterPhoneIsExist
 	}
 	encryPwd, err := tool.NewMD5(s.Password)
@@ -34,28 +38,28 @@ func StuRegister(s *model.Stu) (int64, error) {
 		return 0, err
 	}
 
-	s.Password = encryPwd	// 加密后的密码
-	n, err := dao.StuInsert(s)
+	s.Password = encryPwd // 加密后的密码
+	n, err := v.stuDao.Insert(s)
 	if err != nil {
 		return 0, err
 	}
 	return n, nil
 }
 
-func StuIsExist(s *model.Stu) bool {
-	_, err := dao.StuQueryByPhone(s.Phone)
+func (v *StuService) IsExist(s *model.Stu) bool {
+	_, err := v.stuDao.QueryByPhone(s.Phone)
 	if err != nil {
 		return false
 	}
 	return true
 }
 
-func StuGetInfoByToken(token string) (*model.Stu, error) {
+func (v *StuService) GetInfoByToken(token string) (*model.Stu, error) {
 	t, err := pkg.ParseTokenWithBearer(token)
 	if err != nil {
 		return nil, err
 	}
-	stu, err := dao.StuQueryById(t.Id)
+	stu, err := v.stuDao.QueryById(t.Id)
 	if err != nil {
 		return nil, err
 	}

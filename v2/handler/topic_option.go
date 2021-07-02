@@ -12,20 +12,24 @@ import (
 	"vote/v2/service"
 )
 
-func TopicOptionQueryByTopicId(c *gin.Context) {
+type TopicOptionHandler struct {
+	topicOptionService service.TopicOptionService
+}
+
+func (h *TopicOptionHandler) QueryByTopicId(c *gin.Context) {
 	topicId := c.Param("topicId")
-	options, total, err := service.TopicOptionQueryByTopicId(topicId)
+	options, total, err := h.topicOptionService.QueryByTopicId(topicId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
 		return
 	}
 	c.JSON(http.StatusOK, result.NewWithCodeAndData(result.SUCCESS, gin.H{
 		"option": options,
-		"total": total,
+		"total":  total,
 	}))
 }
 
-func SingleVote(c *gin.Context) {
+func (h *TopicOptionHandler) SingleVote(c *gin.Context) {
 	token := c.GetHeader("Authorization")
 	var v model.VoteSingleVO
 	if err := c.ShouldBindJSON(&v); err != nil {
@@ -34,7 +38,7 @@ func SingleVote(c *gin.Context) {
 		return
 	}
 
-	if err := service.SingleVote(v.Record, v.Votes, strconv.Itoa(v.TopicId), token); err != nil {
+	if err := h.topicOptionService.SingleVote(v.Record, v.Votes, strconv.Itoa(v.TopicId), token); err != nil {
 		if errors.Is(err, errno.TopicUserIsVoted) {
 			c.JSON(http.StatusOK, result.NewWithCode(result.USER_IS_VOTED))
 			return
@@ -45,7 +49,7 @@ func SingleVote(c *gin.Context) {
 	c.JSON(http.StatusOK, result.NewWithCode(result.SUCCESS))
 }
 
-func MultipleVote(c *gin.Context) {
+func (h *TopicOptionHandler) MultipleVote(c *gin.Context) {
 	token := c.GetHeader("Authorization")
 	var v model.VoteMultipleVO
 	if err := c.ShouldBindJSON(&v); err != nil {
@@ -54,7 +58,7 @@ func MultipleVote(c *gin.Context) {
 		return
 	}
 
-	if err := service.MultipleVote(v.Record, v.Votes, strconv.Itoa(v.TopicId), token); err != nil {
+	if err := h.topicOptionService.MultipleVote(v.Record, v.Votes, strconv.Itoa(v.TopicId), token); err != nil {
 		if errors.Is(err, errno.TopicUserIsVoted) {
 			c.JSON(http.StatusOK, result.NewWithCode(result.USER_IS_VOTED))
 			return
@@ -63,4 +67,14 @@ func MultipleVote(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result.NewWithCode(result.SUCCESS))
+}
+
+func (h *TopicOptionHandler) ShowParticipant(c *gin.Context) {
+	optionId := c.Param("optionId")
+	participant, err := h.topicOptionService.ShowParticipant(optionId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
+		return
+	}
+	c.JSON(http.StatusOK, result.NewWithCodeAndData(result.SUCCESS, participant))
 }

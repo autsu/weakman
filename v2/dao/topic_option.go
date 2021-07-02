@@ -9,7 +9,10 @@ import (
 	"vote/v2/pkg"
 )
 
-func TopicOptionInsert(o []*model.TopicOption) (int64, error) {
+type TopicOptionDao struct {
+}
+
+func (d *TopicOptionDao) Insert(o []*model.TopicOption) (int64, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -36,7 +39,7 @@ values (?, ?)
 	return n, nil
 }
 
-func TopicOptionQueryByTopicId(topicId string) (ops []*model.TopicOption, total int, err error) {
+func (d *TopicOptionDao) QueryByTopicId(topicId string) (ops []*model.TopicOption, total int, err error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -61,7 +64,7 @@ where topic_id = ?
 	return os, len(os), nil
 }
 
-func TopicOptionQueryById(id string) (*model.TopicOption, error) {
+func (d *TopicOptionDao) QueryById(id string) (*model.TopicOption, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -86,8 +89,8 @@ where id = ?
 	return &o, err
 }
 
-func TopicOptionAddNumber(i int32, optionId string) error {
-	option, err := TopicOptionQueryById(optionId)
+func (d *TopicOptionDao) AddNumber(i int32, optionId string) error {
+	option, err := d.QueryById(optionId)
 	if err != nil {
 		return err
 	}
@@ -116,8 +119,8 @@ where id = ?
 	return nil
 }
 
-// TopicOptionSingleVote 封装了单选投票，事务操作
-func TopicOptionSingleVote(r *model.VoteRecord, i int32, topicId string) error {
+// SingleVote 封装了单选投票，事务操作
+func (d *TopicOptionDao) SingleVote(r *model.VoteRecord, i int32, topicId string) error {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -194,8 +197,8 @@ where id = ?
 	return nil
 }
 
-// TopicOptionMultipleVote 封装了多选投票，事务操作
-func TopicOptionMultipleVote(rs []*model.VoteRecord, i int32, topicId string) error {
+// MultipleVote 封装了多选投票，事务操作
+func (d *TopicOptionDao) MultipleVote(rs []*model.VoteRecord, i int32, topicId string) error {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -276,3 +279,25 @@ where id = ?
 	return nil
 }
 
+// ShowParticipantById 查看该选项的参与者
+func (d *TopicOptionDao) ShowParticipantById(id string) (participantName []string, err error) {
+	mysql, err := pkg.NewMysql()
+	if err != nil {
+		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
+		return nil, errno.MysqlConnectError
+	}
+	defer mysql.Close()
+
+	sql := `
+select s.name from vote_record vr 
+join stu s on s.id = vr.uid 
+where option_id = ?
+`
+
+	if err := mysql.Select(&participantName, sql, id); err != nil {
+		logrus.Errorf("%s: %s\n", errno.MysqlSelectError)
+		return nil, errno.MysqlSelectError
+	}
+
+	return participantName, nil
+}

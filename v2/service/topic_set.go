@@ -6,12 +6,16 @@ import (
 	"vote/v2/model"
 )
 
-func TopicSetQueryByTopicId(topicId string) (*model.TopicSet, error) {
-	return dao.TopicSetQueryByTopicId(topicId)
+type TopicSetServer struct {
+	topicSetDao dao.TopicSetDao
 }
 
-func TopicSetVailPassword(inputPassword, topicId string) error {
-	password, err := dao.TopicSetQueryPasswordByTopicId(topicId)
+func (s *TopicSetServer) QueryByTopicId(topicId string) (*model.TopicSet, error) {
+	return s.topicSetDao.QueryByTopicId(topicId)
+}
+
+func (s *TopicSetServer) VailPassword(inputPassword, topicId string) error {
+	password, err := s.topicSetDao.QueryPasswordByTopicId(topicId)
 	if err != nil {
 		return err
 	}

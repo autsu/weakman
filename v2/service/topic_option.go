@@ -7,12 +7,18 @@ import (
 	"vote/v2/pkg"
 )
 
-func TopicOptionQueryByTopicId(topicId string) (os []*model.TopicOption, total int, err error) {
-	return dao.TopicOptionQueryByTopicId(topicId)
+type TopicOptionService struct {
+	topicSetDao    dao.TopicSetDao
+	topicOptionDao dao.TopicOptionDao
+	topicService   TopicService
+}
+
+func (d *TopicOptionService) QueryByTopicId(topicId string) (os []*model.TopicOption, total int, err error) {
+	return d.topicOptionDao.QueryByTopicId(topicId)
 }
 
 // SingleVote 单选投票
-func SingleVote(r *model.VoteRecord, i int32, topicId, token string) error {
+func (d *TopicOptionService) SingleVote(r *model.VoteRecord, i int32, topicId, token string) error {
 	bearer, err := pkg.ParseTokenWithBearer(token)
 	if err != nil {
 		return err
@@ -21,7 +27,7 @@ func SingleVote(r *model.VoteRecord, i int32, topicId, token string) error {
 	r.Uid, _ = strconv.Atoi(uid)
 
 	// 检查是否投过票
-	if err := IsVoted(uid, topicId); err != nil {
+	if err := d.topicService.IsVoted(uid, topicId); err != nil {
 		return err
 	}
 
@@ -35,7 +41,7 @@ func SingleVote(r *model.VoteRecord, i int32, topicId, token string) error {
 	//	return err
 	//}
 
-	if err := dao.TopicOptionSingleVote(r, i, topicId); err != nil {
+	if err := d.topicOptionDao.SingleVote(r, i, topicId); err != nil {
 		return err
 	}
 
@@ -43,7 +49,7 @@ func SingleVote(r *model.VoteRecord, i int32, topicId, token string) error {
 }
 
 // MultipleVote 多选投票
-func MultipleVote(rs []*model.VoteRecord, i int32, topicId, token string) error {
+func (d *TopicOptionService) MultipleVote(rs []*model.VoteRecord, i int32, topicId, token string) error {
 	bearer, err := pkg.ParseTokenWithBearer(token)
 	if err != nil {
 		return err
@@ -52,7 +58,7 @@ func MultipleVote(rs []*model.VoteRecord, i int32, topicId, token string) error 
 	uid := bearer.Id
 
 	// 检查是否投过票
-	if err := IsVoted(uid, topicId); err != nil {
+	if err := d.topicService.IsVoted(uid, topicId); err != nil {
 		return err
 	}
 
@@ -61,10 +67,14 @@ func MultipleVote(rs []*model.VoteRecord, i int32, topicId, token string) error 
 		r.Uid, _ = strconv.Atoi(uid)
 	}
 
-	if err := dao.TopicOptionMultipleVote(rs, i, topicId); err != nil {
+	if err := d.topicOptionDao.MultipleVote(rs, i, topicId); err != nil {
 		return err
 	}
 
 	// TODO
 	return nil
+}
+
+func (d *TopicOptionService) ShowParticipant(optionId string) (participantName []string, err error) {
+	return d.topicOptionDao.ShowParticipantById(optionId)
 }

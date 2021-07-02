@@ -11,15 +11,23 @@ import (
 	"vote/v2/service"
 )
 
-func StuLogin(c *gin.Context) {
-	var s model.Stu
-	if err := c.ShouldBindJSON(&s); err != nil {
+type StuHandler struct {
+	StuService service.StuService
+}
+
+func (h *StuHandler) Login(c *gin.Context) {
+	var loginVO = struct {
+		Username string `binding:"required"`
+		Password string `binding:"required"`
+	}{}
+	//var s model.Stu
+	if err := c.ShouldBindJSON(&loginVO); err != nil {
 		logrus.Error(err)
 		c.JSON(http.StatusOK, result.NewWithCode(result.BAD_REQUEST))
 		return
 	}
 
-	token, err := service.StuLogin(s.Username, s.Password)
+	token, err := h.StuService.Login(loginVO.Username, loginVO.Password)
 	if err != nil {
 		logrus.Error(err)
 		if errors.Is(err, errno.MysqlConnectError) {
@@ -53,7 +61,7 @@ func StuLogin(c *gin.Context) {
 		}))
 }
 
-func StuRegister(c *gin.Context) {
+func (h *StuHandler) Register(c *gin.Context) {
 	var s model.Stu
 	if err := c.ShouldBindJSON(&s); err != nil {
 		logrus.Error(err)
@@ -62,7 +70,7 @@ func StuRegister(c *gin.Context) {
 		return
 	}
 
-	_, err := service.StuRegister(&s)
+	_, err := h.StuService.Register(&s)
 	if err != nil {
 		logrus.Error(err)
 		if errors.Is(err, errno.RegisterPhoneIsExist) {
@@ -78,9 +86,9 @@ func StuRegister(c *gin.Context) {
 		result.New(result.SUCCESS, "注册成功", nil))
 }
 
-func StuGetInfo(c *gin.Context) {
+func (h *StuHandler) GetInfo(c *gin.Context) {
 	token := c.GetHeader("Authorization")
-	stu, err := service.StuGetInfoByToken(token)
+	stu, err := h.StuService.GetInfoByToken(token)
 	if err != nil {
 		if errors.Is(err, errno.TokenInvalid) {
 			c.JSON(http.StatusOK, result.NewWithCode(result.TOKEN_INVALID))
@@ -96,4 +104,8 @@ func StuGetInfo(c *gin.Context) {
 	stu.Password = ""
 	c.JSON(http.StatusOK,
 		result.NewWithCodeAndData(result.SUCCESS, stu))
+}
+
+func (h *StuHandler) Logout(c *gin.Context) {
+	c.JSON(http.StatusOK, result.NewWithCode(result.SUCCESS))
 }

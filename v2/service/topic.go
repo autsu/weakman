@@ -13,9 +13,16 @@ import (
 	"vote/v2/tool"
 )
 
-// TopicInsert
+type TopicService struct {
+	stuDao         dao.StuDao
+	topicDao       dao.TopicDao
+	topicOptionDao dao.TopicOptionDao
+	voteRecordDao  dao.VoteRecordDao
+}
+
+// Insert
 // 首先将数据插入到 vote_topic，返回插入的 id，再将其他数据插入到 topic_option 和 vote_set
-func TopicInsert(t *model.Topic, s *model.TopicSet,
+func (d *TopicService) Insert(t *model.Topic, s *model.TopicSet,
 	o []*model.TopicOption, token string) error {
 
 	tok, err := pkg.ParseTokenWithBearer(token)
@@ -29,30 +36,30 @@ func TopicInsert(t *model.Topic, s *model.TopicSet,
 	logrus.Info("local time: ", local)
 	t.Deadline = local
 	logrus.Info("t.Deadline: ", t.Deadline)
-	if err := dao.TopicInsertWithSetAndOptions(t, s, o); err != nil {
+	if err := d.topicDao.InsertWithSetAndOptions(t, s, o); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func TopicQueryAllWithTopicSet(page, size int) ([]*model.Topic, error) {
-	return dao.TopicQueryAllLimitWithTopicSet(page, size)
+func (d *TopicService) QueryAllWithTopicSet(page, size int) ([]*model.Topic, error) {
+	return d.topicDao.QueryAllLimitWithTopicSet(page, size)
 }
 
-func TopicQueryAllFriendlyData(page, size int) (tf []*model.TopicFriendly, total int64, err error) {
-	topics, err := dao.TopicQueryAllLimitWithTopicSet(page, size)
+func (d *TopicService) QueryAllFriendlyData(page, size int) (tf []*model.TopicFriendly, total int64, err error) {
+	topics, err := d.topicDao.QueryAllLimitWithTopicSet(page, size)
 	if err != nil {
 		return nil, 0, err
 	}
 	logrus.Info(topics)
 
-	friendlyData, err := toFriendlyDataWithSlice(topics)
+	friendlyData, err := d.toFriendlyDataWithSlice(topics)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	count, err := dao.TopicCount()
+	count, err := d.topicDao.Count()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -61,21 +68,21 @@ func TopicQueryAllFriendlyData(page, size int) (tf []*model.TopicFriendly, total
 	return friendlyData, count, nil
 }
 
-func TopicQueryByTitleFriendlyData(title string) (tf []*model.TopicFriendly, total int, err error) {
-	topic, err := dao.TopicQueryByTitle(title)
+func (d *TopicService) QueryByTitleFriendlyData(title string) (tf []*model.TopicFriendly, total int, err error) {
+	topic, err := d.topicDao.QueryByTitle(title)
 	logrus.Infof("%+v\n", topic)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	data, err := toFriendlyDataWithSlice(topic)
+	data, err := d.toFriendlyDataWithSlice(topic)
 	if err != nil {
 		return nil, 0, err
 	}
 	return data, len(data), nil
 }
 
-func toFriendlyDataWithSlice(topics []*model.Topic) ([]*model.TopicFriendly, error) {
+func (d *TopicService) toFriendlyDataWithSlice(topics []*model.Topic) ([]*model.TopicFriendly, error) {
 	t := make([]*model.TopicFriendly, len(topics))
 	// memset
 	for i := 0; i < len(t); i++ {
@@ -85,7 +92,7 @@ func toFriendlyDataWithSlice(topics []*model.Topic) ([]*model.TopicFriendly, err
 	for i := 0; i < len(topics); i++ {
 		t[i].Id = topics[i].Id
 		logrus.Info("topics[i].StuId: ", topics[i].StuId)
-		stu, err := dao.StuQueryById(topics[i].StuId)
+		stu, err := d.stuDao.QueryById(topics[i].StuId)
 		if err != nil {
 			logrus.Error(errno.MysqlSelectError)
 			return nil, err
@@ -120,7 +127,7 @@ func toFriendlyDataWithSlice(topics []*model.Topic) ([]*model.TopicFriendly, err
 			t[i].ShowResult = "展示结果"
 		}
 
-		if time.Now().After(topics[i].Deadline) {
+		if time.Now().Before(topics[i].Deadline) {
 			t[i].Deadline = "进行中"
 		} else {
 			t[i].Deadline = "已结束"
@@ -130,13 +137,13 @@ func toFriendlyDataWithSlice(topics []*model.Topic) ([]*model.TopicFriendly, err
 	return t, nil
 }
 
-func toFriendlyData(topic *model.Topic) (*model.TopicFriendly, error) {
+func (d *TopicService) toFriendlyData(topic *model.Topic) (*model.TopicFriendly, error) {
 	var t model.TopicFriendly
 	logrus.Infof("%+v\n", topic)
 	t.Id = topic.Id
 	t.Title = topic.Title
 	logrus.Info("topics[i].StuId: ", topic.StuId)
-	stu, err := dao.StuQueryById(topic.StuId)
+	stu, err := d.stuDao.QueryById(topic.StuId)
 	if err != nil {
 		logrus.Error(errno.MysqlSelectError)
 		return nil, err
@@ -180,15 +187,15 @@ func toFriendlyData(topic *model.Topic) (*model.TopicFriendly, error) {
 }
 
 // IsVoted 用户是否已经投过票
-func IsVoted(userId, topicId string) error {
-	records, err := dao.RecordQueryByUserId(userId)
+func (d *TopicService) IsVoted(userId, topicId string) error {
+	records, err := d.voteRecordDao.QueryByUserId(userId)
 	if err != nil {
 		logrus.Error(err)
 		return err
 	}
 
 	for _, record := range records {
-		option, _ := dao.TopicOptionQueryById(strconv.Itoa(record.OptionId))
+		option, _ := d.topicOptionDao.QueryById(strconv.Itoa(record.OptionId))
 		if option != nil && strconv.Itoa(option.TopicId) == topicId {
 			return errno.TopicUserIsVoted
 		}
@@ -196,8 +203,8 @@ func IsVoted(userId, topicId string) error {
 	return nil
 }
 
-func TopicQueryByIdWithFmtTime(topicId string) (*model.Topic, error) {
-	topic, err := dao.TopicQueryById(topicId)
+func (d *TopicService) QueryByIdWithFmtTime(topicId string) (*model.Topic, error) {
+	topic, err := d.topicDao.QueryById(topicId)
 	if err != nil {
 		return nil, err
 	}
@@ -209,8 +216,8 @@ func TopicQueryByIdWithFmtTime(topicId string) (*model.Topic, error) {
 	return topic, nil
 }
 
-func TopicShowResultById(id string) ([]*model.VoteResultVO, error) {
-	rs, err := dao.TopicShowResultById(id)
+func (d *TopicService) ShowResultById(id string) ([]*model.VoteResultVO, error) {
+	rs, err := d.topicDao.ShowResultById(id)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +231,7 @@ func TopicShowResultById(id string) ([]*model.VoteResultVO, error) {
 	})
 
 	for _, r := range rs {
-		r.Percentage = float32(r.Votes) / float32(total)
+		r.Percentage = float32(r.Votes) / float32(total) * 100
 	}
 
 	return rs, nil

@@ -7,7 +7,10 @@ import (
 	"vote/v2/pkg"
 )
 
-func TopicSetInsert(topicSet *model.TopicSet) (int64, error) {
+type TopicSetDao struct {
+}
+
+func (d *TopicSetDao) Insert(topicSet *model.TopicSet) (int64, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -36,7 +39,7 @@ values (?, ?, ?, ?, ?)
 	return n, nil
 }
 
-func TopicSetQueryByTopicId(topicId string) (*model.TopicSet, error) {
+func (d *TopicSetDao) QueryByTopicId(topicId string) (*model.TopicSet, error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)
@@ -57,7 +60,7 @@ where topic_id = ?
 	return &ts, nil
 }
 
-func TopicSetQueryPasswordByTopicId(topicId string) (password string, err error) {
+func (d *TopicSetDao) QueryPasswordByTopicId(topicId string) (password string, err error) {
 	mysql, err := pkg.NewMysql()
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlConnectError, err)

@@ -7,33 +7,38 @@ import (
 )
 
 func Router() *gin.Engine {
+	var stuHandler handler.StuHandler
+	var topicHandler handler.TopicHandler
+	var topicOptionHandler handler.TopicOptionHandler
+	var topicSetHandler handler.TopicSetHandler
+
 	r := gin.Default()
 
 	r.Use(middleware.Cors())
 
-	r.POST("/topic", handler.TopicInsert)
-	r.GET("/topic", handler.TopicQueryAllWithTopicSet)
-	r.GET("/topic/:topicId", handler.TopicQueryById)
-	r.GET("/topic/friendly", handler.TopicQueryAllFriendlyData)
-	r.GET("/topic/friendly/:title", handler.TopicQueryByTitleFriendlyData)
-	r.GET("/topic/result/:topicId", handler.TopicShowResult)
+	r.POST("/topic", topicHandler.Insert)
+	r.GET("/topic", topicHandler.QueryAllWithTopicSet)
+	r.GET("/topic/:topicId", topicHandler.QueryById)
+	r.GET("/topic/friendly", topicHandler.QueryAllFriendlyData)
+	r.GET("/topic/friendly/:title", topicHandler.QueryByTitleFriendlyData)
+	r.GET("/topic/result/:topicId", topicHandler.ShowResult)
 
+	r.GET("/option/:topicId", topicOptionHandler.QueryByTopicId)
 
-	r.GET("/option/:topicId", handler.TopicOptionQueryByTopicId)
-
-	r.GET("/topicset/:topicId", handler.TopicSetQueryByTopicId)
-	r.POST("/topicset/vail/pwd", handler.TopicSetVailPassword)
-
+	r.GET("/topicset/:topicId", topicSetHandler.QueryByTopicId)
+	r.POST("/topicset/vail/pwd", topicSetHandler.VailPassword)
+	r.GET("/topic/participant/:optionId", topicOptionHandler.ShowParticipant)
 
 	stu := r.Group("/stu")
 	{
-		stu.POST("/login", handler.StuLogin)
-		stu.POST("/register", handler.StuRegister)
+		stu.POST("/login", stuHandler.Login)
+		stu.POST("/register", stuHandler.Register)
 
 		r.Use(middleware.StuAuth)
-		stu.GET("/info", handler.StuGetInfo)
+		stu.GET("/info", stuHandler.GetInfo)
+		stu.POST("/logout", stuHandler.Logout)
 	}
-	r.POST("/vote/single", handler.SingleVote)
-	r.POST("/vote/multiple", handler.MultipleVote)
+	r.POST("/vote/single", topicOptionHandler.SingleVote)
+	r.POST("/vote/multiple", topicOptionHandler.MultipleVote)
 	return r
 }

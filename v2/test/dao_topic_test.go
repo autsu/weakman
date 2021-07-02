@@ -31,3 +31,14 @@ func TestTopicQueryByTitle(t *testing.T) {
 	}
 	log.Printf("%+v\n", topic)
 }
+
+func TestTopicShowResultById(t *testing.T) {
+	result, err := dao.TopicShowResultById("7")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, vo := range result {
+		log.Printf("%+v\n", vo)
+	}
+
+}

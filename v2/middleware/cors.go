@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"runtime/debug"
 	"vote/v2/enum/result"
 )
 
@@ -35,6 +36,7 @@ func Cors() gin.HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				log.Printf("Panic info is: %v", err)
+				debug.PrintStack() // 打印调用栈信息
 				c.JSON(http.StatusInternalServerError, result.NewWithCode(result.SERVER_ERROR))
 				return
 			}
