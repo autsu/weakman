@@ -7,8 +7,7 @@ import (
 	"vote/v2/pkg"
 )
 
-type TopicSetDao struct {
-}
+type TopicSetDao struct{}
 
 func (d *TopicSetDao) Insert(topicSet *model.TopicSet) (int64, error) {
 	mysql, err := pkg.NewMysql()

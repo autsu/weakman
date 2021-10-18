@@ -1,9 +1,10 @@
 package pkg
 
 import (
+	"vote/v2/config"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"vote/v2/config"
 )
 
 func NewMysql() (*sqlx.DB, error) {

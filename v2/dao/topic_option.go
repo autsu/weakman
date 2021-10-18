@@ -1,16 +1,15 @@
 package dao
 
 import (
-	"github.com/sirupsen/logrus"
 	"strconv"
 	"sync/atomic"
 	"vote/v2/errno"
 	"vote/v2/model"
 	"vote/v2/pkg"
+	"github.com/sirupsen/logrus"
 )
 
-type TopicOptionDao struct {
-}
+type TopicOptionDao struct {}
 
 func (d *TopicOptionDao) Insert(o []*model.TopicOption) (int64, error) {
 	mysql, err := pkg.NewMysql()
@@ -158,37 +157,44 @@ insert into vote_record(uid, option_id, time) values (?, ?, ?)
 		return errno.MysqlInsertError
 	}
 
-	// 2. 根据 option_id 查询出该选项的票数
-	//该选项的票数 + i
+	// 2. 根据 option_id 查询出该选项的票数，然后将该选项的票数 + i，并写入数据库
+	//
+	// 这里的 sql 语句需要添加 for update，为 select 添加排他锁，在当前事务
+	// 未提交之前，其他所有事务都会在此被阻塞
+	// 如果这里不加锁，那么可能会出现更新覆盖的问题，比如 A、B 2 条线程同时进来，
+	// A 得到选项1 的值为 100，但在 A 将值更新为 100 + 1 之前，
+	// B 也得到了选项1 的值 100，之后 A 更新为 101，B 也更新为 100 + 1，
+	// 导致最终结果为 101 而不是正确的 102，因为 B 把 A 的更新给覆盖了
+	//
+	// 在数据库层面加了排它锁以后，就不需要在应用层面，对票数 + 1 这一步进行原子
+	// 操作了 
 	sql1 := `
 select id,
        topic_id,
        option_content,
        number
 from topic_option
-where id = ?
+where id = ? for update
 `
 	var o model.TopicOption
 	if err := tx.Get(&o, sql1, strconv.Itoa(r.OptionId)); err != nil {
 		logrus.Warnf("%s: %s\n", errno.MysqlSelectNoData, err)
 		return errno.MysqlSelectNoData
 	}
-	//option, err := TopicOptionQueryById(strconv.Itoa(r.OptionId))
-	//if err != nil {
-	//	return err
-	//}
+	logrus.Println("old: ", o.Number)
 
 	// 3. 票数原子+i，并将新数据写入
-	num32 := int32(o.Number)
-	for atomic.CompareAndSwapInt32(&num32, num32, num32+i) {
-		break
-	}
+	// num32 := int32(o.Number)
+	// for atomic.CompareAndSwapInt32(&num32, num32, num32+i) {
+	// 	break
+	// }
+	// logrus.Println("old+1: ", num32)
 
 	sql2 := `
 update topic_option set number = ? 
-where id = ?
+where id = ?;
 `
-	_, err = tx.Exec(sql2, num32, r.OptionId)
+	_, err = tx.Exec(sql2, o.Number+1, r.OptionId)
 	if err != nil {
 		logrus.Errorf("%s: %s\n", errno.MysqlUpdateError, err)
 		return errno.MysqlUpdateError
@@ -247,7 +253,7 @@ select id,
        option_content,
        number
 from topic_option
-where id = ?
+where id = ? for update
 `
 		var o model.TopicOption
 		if err := tx.Get(&o, sql1, strconv.Itoa(r.OptionId)); err != nil {
@@ -257,17 +263,18 @@ where id = ?
 			return errno.MysqlSelectNoData
 		}
 
-		num32 := int32(o.Number)
-		for atomic.CompareAndSwapInt32(&num32, num32, num32+i) {
-			break
-		}
+		// 加了 for update 不需要原子操作了
+		// num32 := int32(o.Number)
+		// for atomic.CompareAndSwapInt32(&num32, num32, num32+i) {
+		// 	break
+		// }
 
 		// 3. 票数原子+i，并将新数据写入
 		sql2 := `
 update topic_option set number = ? 
 where id = ?
 `
-		_, err = tx.Exec(sql2, num32, r.OptionId)
+		_, err = tx.Exec(sql2, o.Number+1, r.OptionId)
 		if err != nil {
 			logrus.Errorf("%s: %s\n", errno.MysqlUpdateError, err)
 			logrus.Errorf("事务回滚")

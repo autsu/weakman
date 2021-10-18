@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
+	//"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -15,7 +15,7 @@ type MysqlConfig struct {
 	Password string
 }
 
-var configPaht = "/Users/zz/GolandProjects/web-demo/vote/v2/config"
+var configPaht = "/Users/zz/GolandProjects/web/vote/v2/config"
 
 func NewMysqlConfig() (dns string, err error) {
 	viper.SetConfigName("mysql")
@@ -38,11 +38,11 @@ func NewMysqlConfig() (dns string, err error) {
 	password := viper.GetString(`mysql.password`)
 	port := viper.GetString(`mysql.port`)
 	dbname := viper.GetString(`mysql.db_name`)
-	logrus.Info(host, username, password, port, dbname)
+	//logrus.Info(host, username, password, port, dbname)
 	//log.Println(host, username, password, port, dbname)
 
 	dns = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		username, password, host, port, dbname)
-	logrus.Info(dns)
+	//logrus.Info(dns)
 	return dns, nil
 }

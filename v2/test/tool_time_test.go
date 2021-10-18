@@ -8,7 +8,8 @@ import (
 )
 
 func TestUtoB(t *testing.T) {
-	topic, _ := dao.TopicQueryById("7")
+	var dt *dao.TopicDao
+	topic, _ := dt.QueryById("7")
 	utoB := tool.UtoB(topic.Deadline)
 	log.Println(utoB)
 }

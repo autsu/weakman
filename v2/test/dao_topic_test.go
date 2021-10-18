@@ -7,7 +7,8 @@ import (
 )
 
 func TestTopicQueryAllWithTopicSet(t *testing.T) {
-	topics, err := dao.TopicQueryAllLimitWithTopicSet(2, 3)
+	var dt *dao.TopicDao
+	topics, err := dt.QueryAllLimitWithTopicSet(2, 3)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -17,7 +18,8 @@ func TestTopicQueryAllWithTopicSet(t *testing.T) {
 }
 
 func TestTopicCount(t *testing.T) {
-	count, err := dao.TopicCount()
+	var dt *dao.TopicDao
+	count, err := dt.Count()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -25,7 +27,8 @@ func TestTopicCount(t *testing.T) {
 }
 
 func TestTopicQueryByTitle(t *testing.T) {
-	topic, err := dao.TopicQueryByTitle("123")
+	var dt *dao.TopicDao
+	topic, err := dt.QueryByTitle("123")
 	if err != nil {
 		log.Println(err)
 	}
@@ -33,12 +36,12 @@ func TestTopicQueryByTitle(t *testing.T) {
 }
 
 func TestTopicShowResultById(t *testing.T) {
-	result, err := dao.TopicShowResultById("7")
+	var dt *dao.TopicDao
+	result, err := dt.ShowResultById("7")
 	if err != nil {
 		log.Fatalln(err)
 	}
 	for _, vo := range result {
 		log.Printf("%+v\n", vo)
 	}
-
 }
