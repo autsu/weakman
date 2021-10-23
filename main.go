@@ -4,9 +4,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"log"
 	"os"
-	"vote/v2/router"
+	"vote/router"
 )
-
 
 func init() {
 	logrus.SetOutput(os.Stdout)
